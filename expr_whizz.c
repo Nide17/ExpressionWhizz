@@ -31,42 +31,46 @@ int main(int argc, char *argv[])
 
   printf("Welcome to ExpressionWhizz!\n");
 
-  while (!time_to_quit) {
+  while (!time_to_quit)
+  {
     errmsg[0] = '\0';
-    
+
     input = readline("\nExpr? ");
-    if (input == NULL || strcasecmp(input, "quit") == 0) {
+    if (input == NULL || strcasecmp(input, "quit") == 0)
+    {
       time_to_quit = true;
       goto loop_end;
     }
 
-    if (*input == '\0')   // user just hit enter, no content
+    if (*input == '\0') // user just hit enter, no content
       goto loop_end;
 
     add_history(input);
 
     tokens = TOK_tokenize_input(input, errmsg, sizeof(errmsg));
 
-    if (tokens == NULL) {
+    if (tokens == NULL)
+    {
       fprintf(stderr, "%s\n", errmsg);
       goto loop_end;
     }
 
     if (CL_length(tokens) == 0)
       goto loop_end;
-      
+
     // uncomment for more debug info
-    // TOK_print(tokens);
+    TOK_print(tokens);
 
     tree = Parse(tokens, errmsg, sizeof(errmsg));
 
-    if (tree == NULL) {
+    if (tree == NULL)
+    {
       fprintf(stderr, "%s\n", errmsg);
       goto loop_end;
     }
 
     ET_tree2string(tree, expr_buf, sizeof(expr_buf));
-    
+
     printf("%s  ==> %g\n", expr_buf, ET_evaluate(tree));
 
   loop_end:

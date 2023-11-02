@@ -156,11 +156,11 @@ size_t writeValueToBuffer(double number, char *buf, size_t buf_sz)
   size_t length;
 
   // if the number is an integer, we truncate the decimal part
-  if (fmod(number, 1.0) == 0.0)
-    length = snprintf(buf, buf_sz, "%.0f", number);
-    
-  else
-    length = snprintf(buf, buf_sz, "%g", number);
+  // if (fmod(number, 1.0) == 0.0)
+  //   length = snprintf(buf, buf_sz, "%.0f", number);
+
+  // else
+  length = snprintf(buf, buf_sz, "%g", number);
 
   return length;
 }

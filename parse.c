@@ -34,35 +34,19 @@ static ExprTree primary(CList tokens, char *errmsg, size_t errmsg_sz);
 
 static ExprTree additive(CList tokens, char *errmsg, size_t errmsg_sz)
 {
-  ExprTree ret = NULL;
-  // TODO: Add your code here
+  ExprTree ret = multiplicative(tokens, errmsg, errmsg_sz);
+  if (ret == NULL)
+    return NULL;
 
-  // Perform the addition or subtraction recursively
-  if (TOK_next_type(tokens) == TOK_PLUS)
+  while (TOK_next_type(tokens) == TOK_PLUS || TOK_next_type(tokens) == TOK_MINUS)
   {
+    TokenType op = TOK_next_type(tokens);
     TOK_consume(tokens);
-
     ExprTree right = multiplicative(tokens, errmsg, errmsg_sz);
     if (right == NULL)
-    {
-      snprintf(errmsg, errmsg_sz, "Expected expression after '+'");
       return NULL;
-    }
 
-    ret = ET_node(OP_ADD, ret, right);
-  }
-  else if (TOK_next_type(tokens) == TOK_MINUS)
-  {
-    TOK_consume(tokens);
-
-    ExprTree right = multiplicative(tokens, errmsg, errmsg_sz);
-    if (right == NULL)
-    {
-      snprintf(errmsg, errmsg_sz, "Expected expression after '-'");
-      return NULL;
-    }
-
-    ret = ET_node(OP_SUB, ret, right);
+    ret = ET_node((op == TOK_PLUS) ? OP_ADD : OP_SUB, ret, right);
   }
 
   return ret;
@@ -70,35 +54,19 @@ static ExprTree additive(CList tokens, char *errmsg, size_t errmsg_sz)
 
 static ExprTree multiplicative(CList tokens, char *errmsg, size_t errmsg_sz)
 {
-  ExprTree ret = NULL;
-  // TODO: Add your code here
+  ExprTree ret = exponential(tokens, errmsg, errmsg_sz);
+  if (ret == NULL)
+    return NULL;
 
-  // Perform the multiplication or division recursively
-  if (TOK_next_type(tokens) == TOK_MULTIPLY)
+  while (TOK_next_type(tokens) == TOK_MULTIPLY || TOK_next_type(tokens) == TOK_DIVIDE)
   {
+    TokenType op = TOK_next_type(tokens);
     TOK_consume(tokens);
-
     ExprTree right = exponential(tokens, errmsg, errmsg_sz);
     if (right == NULL)
-    {
-      snprintf(errmsg, errmsg_sz, "Expected expression after '*'");
       return NULL;
-    }
 
-    ret = ET_node(OP_MUL, ret, right);
-  }
-  else if (TOK_next_type(tokens) == TOK_DIVIDE)
-  {
-    TOK_consume(tokens);
-
-    ExprTree right = exponential(tokens, errmsg, errmsg_sz);
-    if (right == NULL)
-    {
-      snprintf(errmsg, errmsg_sz, "Expected expression after '/'");
-      return NULL;
-    }
-
-    ret = ET_node(OP_DIV, ret, right);
+    ret = ET_node((op == TOK_MULTIPLY) ? OP_MUL : OP_DIV, ret, right);
   }
 
   return ret;
@@ -106,22 +74,18 @@ static ExprTree multiplicative(CList tokens, char *errmsg, size_t errmsg_sz)
 
 static ExprTree exponential(CList tokens, char *errmsg, size_t errmsg_sz)
 {
-  ExprTree ret = NULL;
+  ExprTree ret = primary(tokens, errmsg, errmsg_sz);
+  if (ret == NULL)
+    return NULL;
 
-  // TODO: Add your code here
-  // Perform the exponentiation recursively
   if (TOK_next_type(tokens) == TOK_POWER)
   {
     TOK_consume(tokens);
-
-    ExprTree right = primary(tokens, errmsg, errmsg_sz);
+    ExprTree right = exponential(tokens, errmsg, errmsg_sz);
     if (right == NULL)
-    {
-      snprintf(errmsg, errmsg_sz, "Expected expression after '^'");
       return NULL;
-    }
 
-    ret = ET_node(OP_POWER, ret, right);
+    return ET_node(OP_POWER, ret, right);
   }
 
   return ret;
@@ -138,71 +102,53 @@ static ExprTree primary(CList tokens, char *errmsg, size_t errmsg_sz)
   }
   else if (TOK_next_type(tokens) == TOK_OPEN_PAREN)
   {
-    // TODO: Add your code here
-    // Handle parenthesized expressions
     TOK_consume(tokens);
 
     ret = additive(tokens, errmsg, errmsg_sz);
     if (ret == NULL)
-    {
-      snprintf(errmsg, errmsg_sz, "Expected expression after '('");
       return NULL;
-    }
 
     if (TOK_next_type(tokens) != TOK_CLOSE_PAREN)
     {
-      snprintf(errmsg, errmsg_sz, "Expected ')' after expression");
+      snprintf(errmsg, errmsg_sz, "Expected ')'");
       return NULL;
     }
-
     TOK_consume(tokens);
+
+    return ret;
   }
   else if (TOK_next_type(tokens) == TOK_MINUS)
   {
     TOK_consume(tokens);
 
     ret = primary(tokens, errmsg, errmsg_sz);
+
     if (ret == NULL)
       return NULL;
+
     ret = ET_node(UNARY_NEGATE, ret, NULL);
   }
   else
   {
-    // TODO: Add your code here
-    // Handle other unary operators
-    if (TOK_next_type(tokens) == TOK_PLUS)
-    {
-      TOK_consume(tokens);
-
-      ret = primary(tokens, errmsg, errmsg_sz);
-      if (ret == NULL)
-        return NULL;
-      ret = ET_node(OP_SUB, ret, NULL);
-    }
-    else
-    {
-      snprintf(errmsg, errmsg_sz, "Expected value or '('");
-      return NULL;
-    }
+    snprintf(errmsg, errmsg_sz, "Unexpected token %s", TT_to_str(TOK_next_type(tokens)));
+    return NULL;
   }
+
   return ret;
 }
 
 ExprTree Parse(CList tokens, char *errmsg, size_t errmsg_sz)
 {
-  // TODO: Add your code here
-  // Call the first rule of the grammar
   ExprTree ret = additive(tokens, errmsg, errmsg_sz);
+
   if (ret == NULL)
-  {
-    snprintf(errmsg, errmsg_sz, "Expected expression");
     return NULL;
-  }
 
   if (TOK_next_type(tokens) != TOK_END)
   {
-    snprintf(errmsg, errmsg_sz, "Expected end of expression");
+    snprintf(errmsg, errmsg_sz, "Syntax error on token %s", TT_to_str(TOK_next_type(tokens)));
     return NULL;
   }
-  return NULL;
+
+  return ret;
 }
