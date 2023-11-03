@@ -308,7 +308,7 @@ Token TOK_next(CList tokens)
   if (tokens->head != NULL)
   {
     nextToken = tokens->head->element;
-    CL_remove(tokens, 0); // Remove the token from the list
+    // CL_remove(tokens, 0); // Remove the token from the list
   }
 
   return nextToken;
