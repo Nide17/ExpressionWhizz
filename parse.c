@@ -34,6 +34,7 @@ static ExprTree primary(CList tokens, char *errmsg, size_t errmsg_sz);
 
 static ExprTree additive(CList tokens, char *errmsg, size_t errmsg_sz)
 {
+  errmsg[0] = '\0';
   ExprTree ret = multiplicative(tokens, errmsg, errmsg_sz);
   if (ret == NULL)
     return NULL;
@@ -54,6 +55,7 @@ static ExprTree additive(CList tokens, char *errmsg, size_t errmsg_sz)
 
 static ExprTree multiplicative(CList tokens, char *errmsg, size_t errmsg_sz)
 {
+  errmsg[0] = '\0';
   ExprTree ret = exponential(tokens, errmsg, errmsg_sz);
   if (ret == NULL)
     return NULL;
@@ -74,6 +76,8 @@ static ExprTree multiplicative(CList tokens, char *errmsg, size_t errmsg_sz)
 
 static ExprTree exponential(CList tokens, char *errmsg, size_t errmsg_sz)
 {
+
+  errmsg[0] = '\0';
   ExprTree ret = primary(tokens, errmsg, errmsg_sz);
   if (ret == NULL)
     return NULL;
@@ -93,6 +97,8 @@ static ExprTree exponential(CList tokens, char *errmsg, size_t errmsg_sz)
 
 static ExprTree primary(CList tokens, char *errmsg, size_t errmsg_sz)
 {
+
+  errmsg[0] = '\0';
   ExprTree ret = NULL;
 
   if (TOK_next_type(tokens) == TOK_VALUE)
@@ -140,6 +146,7 @@ static ExprTree primary(CList tokens, char *errmsg, size_t errmsg_sz)
 
 ExprTree Parse(CList tokens, char *errmsg, size_t errmsg_sz)
 {
+  errmsg[0] = '\0';
   ExprTree ret = additive(tokens, errmsg, errmsg_sz);
 
   if (ret == NULL)

@@ -39,9 +39,11 @@ static struct _cl_node *_CL_new_node(CListElementType element, struct _cl_node *
 CList CL_new()
 {
   CList list = (CList)malloc(sizeof(struct _clist));
-
   if (list == NULL)
+  {
+    printf("CL_new: malloc failed\n");
     return NULL;
+  }
 
   list->head = NULL;
   list->length = 0;
@@ -54,8 +56,6 @@ void CL_free(CList list)
 {
   if (list == NULL)
     return;
-
-  assert(list);
 
   // deallocate all the nodes in the list
   struct _cl_node *this_node = list->head;
@@ -84,11 +84,6 @@ int CL_length(CList list)
 
   assert(list);
 #ifdef DEBUG
-  // In production code, we simply return the stored value for
-  // length. However, as a defensive programming method to prevent
-  // bugs in our code, in DEBUG mode we traverse the list and ensure the
-  // number of elements on the list is equal to the stored length.
-
   int len = 0;
   for (struct _cl_node *node = list->head; node != NULL; node = node->next)
     len++;
@@ -132,9 +127,6 @@ CListElementType CL_pop(CList list)
 void CL_append(CList list, CListElementType element)
 {
   assert(list);
-
-  // Display - typedef Token CListElementType;
-  // printf("append - element: %s\n", TT_to_str(element.type));
 
   // new node to append - its next pointer should be NULL
   struct _cl_node *new_node = _CL_new_node(element, NULL);

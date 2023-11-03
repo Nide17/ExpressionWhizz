@@ -60,6 +60,7 @@ ExprTree ET_value(double value)
 {
   ExprTree tree = malloc(sizeof(struct _expr_tree_node));
   assert(tree != NULL);
+  
   tree->type = VALUE;
   tree->n.value = value;
   return tree;
@@ -68,8 +69,13 @@ ExprTree ET_value(double value)
 // Documented in .h file
 ExprTree ET_node(ExprNodeType op, ExprTree left, ExprTree right)
 {
+
+  if (op == UNARY_NEGATE)
+    assert(right == NULL);
+  else
+    assert(left != NULL && right != NULL);
+
   ExprTree tree = malloc(sizeof(struct _expr_tree_node));
-  assert(tree != NULL);
   tree->type = op;
   tree->n.child[LEFT] = left;
   tree->n.child[RIGHT] = right;
