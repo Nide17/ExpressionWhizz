@@ -150,22 +150,6 @@ double ET_evaluate(ExprTree tree)
 }
 
 // Documented in .h file
-size_t writeValueToBuffer(double number, char *buf, size_t buf_sz)
-{
-  // Handling the value
-  size_t length;
-
-  // if the number is an integer, we truncate the decimal part
-  // if (fmod(number, 1.0) == 0.0)
-  //   length = snprintf(buf, buf_sz, "%.0f", number);
-
-  // else
-  length = snprintf(buf, buf_sz, "%g", number);
-
-  return length;
-}
-
-// Documented in .h file
 size_t ET_tree2string(ExprTree tree, char *buf, size_t buf_sz)
 {
   if (tree == NULL || buf == NULL || buf_sz == 0)
@@ -177,8 +161,7 @@ size_t ET_tree2string(ExprTree tree, char *buf, size_t buf_sz)
 
   // write to buffer if it is a value
   if (tree->type == VALUE)
-    length = writeValueToBuffer(tree->n.value, buf, buf_sz);
-
+    length = snprintf(buf, buf_sz, "%g", tree->n.value);
   else
   {
     // process the left child
@@ -216,7 +199,7 @@ size_t ET_tree2string(ExprTree tree, char *buf, size_t buf_sz)
   }
 
   // truncate the string if it is too long for the buffer
-  if (length >= buf_sz - 1)
+  if (length >= buf_sz)
   {
     buf[buf_sz - 2] = '$';
     buf[buf_sz - 1] = '\0';

@@ -130,6 +130,7 @@ static ExprTree primary(CList tokens, char *errmsg, size_t errmsg_sz)
   }
   else
   {
+    // printf("Unexpected token %s\n", TT_to_str(TOK_next_type(tokens)));
     snprintf(errmsg, errmsg_sz, "Unexpected token %s", TT_to_str(TOK_next_type(tokens)));
     return NULL;
   }

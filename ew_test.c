@@ -408,7 +408,7 @@ int test_parse_errors()
 
   tokens = TOK_tokenize_input("2++3", errmsg, sizeof(errmsg));
   test_assert(CL_length(tokens) == 4);
-  test_assert(Parse(tokens, errmsg, sizeof(errmsg)) == NULL); // TODO: check error message
+  test_assert(Parse(tokens, errmsg, sizeof(errmsg)) == NULL);
   test_assert(strcasecmp(errmsg, "Unexpected token PLUS") == 0);
   CL_free(tokens);
 
@@ -427,15 +427,16 @@ int test_parse_errors()
   tokens = TOK_tokenize_input("1 + 2 (", errmsg, sizeof(errmsg));
   test_assert(CL_length(tokens) == 4);
   test_assert(Parse(tokens, errmsg, sizeof(errmsg)) == NULL);
+  printf("Error message: %s\n", errmsg);
   test_assert(strcasecmp(errmsg, "Syntax error on token OPEN_PAREN") == 0);
   CL_free(tokens);
 
-  // tokens = TOK_tokenize_input("sine", errmsg, sizeof(errmsg)); // unexpected char s - token (end)
-  // test_assert(CL_length(tokens) == 0);
-  // test_assert(Parse(tokens, errmsg, sizeof(errmsg)) == NULL);
-  // printf("Error message: %s\n", errmsg);
-  // test_assert(strcasecmp(errmsg, "Position 1: unexpected character s") == 0);
-  // CL_free(tokens);
+  tokens = TOK_tokenize_input("sine", errmsg, sizeof(errmsg)); // unexpected char s - token (end)
+  test_assert(CL_length(tokens) == 0);
+  test_assert(Parse(tokens, errmsg, sizeof(errmsg)) == NULL);
+  printf("Error message: %s\n", errmsg);
+  test_assert(strcasecmp(errmsg, "Position 1: unexpected character s") == 0);
+  CL_free(tokens);
 
   return 1;
 
