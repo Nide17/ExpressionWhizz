@@ -79,7 +79,6 @@ bool validate_input(const char *input, char *errmsg, size_t errmsg_sz)
     // ANY THING ELSE THAT IS NOT optional period, then a required decimal digit, then any sequence of letters, digits, underscores, periods, and exponents: e+, e-, E+, E-, p+, p-, P+, and P-
     if (!isdigit(input[i]) && !isspace(input[i]) && input[i] != '.' && !isValidMathSign(input[i]) && !isParenthesis(input[i]) && !isExponent(input[i]))
     {
-      printf("Invalid character: %c\n", input[i]);
       snprintf(errmsg, errmsg_sz, "Position %d: unexpected character %c", i + 1, input[i]);
      break;
     }
@@ -173,6 +172,7 @@ CList TOK_tokenize_input(const char *input, char *errmsg, size_t errmsg_sz)
     }
     else
     {
+      // printf("Unexpected character %c\n", input[i]);
       snprintf(errmsg, errmsg_sz, "Position %d: unexpected character %c", i + 1, input[i]);
       return NULL;
     }
@@ -281,7 +281,7 @@ TokenType TOK_next_type(CList tokens)
 {
   if (tokens == NULL)
   {
-    printf("next_type - tokens is NULL\n");
+    // printf("next_type - tokens is NULL\n");
     return TOK_END;
   }
 
@@ -300,20 +300,15 @@ TokenType TOK_next_type(CList tokens)
 Token TOK_next(CList tokens)
 {
   if (tokens == NULL)
-  {
-    printf("next - tokens is NULL\n");
     return (Token){TOK_END, 0.0};
-  }
 
   assert(tokens != NULL);
-  Token nextToken = {TOK_END, 0.0}; // Initialize with a default value
+  Token nextToken = {TOK_END, 0.0};
 
   if (tokens->head != NULL)
   {
     nextToken = tokens->head->element;
-    // printf("Next token: %s\n", TT_to_str(nextToken.type));
-    // Does not modify the list of tokens
-    // CL_remove(tokens, 0); // Remove the token from the list
+    CL_remove(tokens, 0); // Remove the token from the list
   }
 
   return nextToken;
@@ -323,10 +318,7 @@ Token TOK_next(CList tokens)
 void TOK_consume(CList tokens)
 {
   if (tokens == NULL)
-  {
-    printf("consume - tokens is NULL\n");
     return;
-  }
 
   assert(tokens != NULL);
   if (tokens->head != NULL)
@@ -348,7 +340,7 @@ void TOK_print(CList tokens)
 {
   if (tokens == NULL)
   {
-    printf("print - tokens is NULL\n");
+    printf("No tokens\n");
     return;
   }
 
