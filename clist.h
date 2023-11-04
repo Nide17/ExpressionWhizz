@@ -3,7 +3,7 @@
  *
  * Linked list implementation for ISSE Assignment 5
  *
- * Author: Niyomwungeri Parmenide ISHIMWE<parmenin@andrew.cmu.edu>
+ * Author: Niyomwungeri Parmenide Ishimwe<parmenin@andrew.cmu.edu>
  *
  */
 #ifndef _CLIST_H_
@@ -12,9 +12,7 @@
 #include <stdbool.h>
 #include "token.h"
 
-// The element type for this list. It should be possible to change the
-// list type simply by changing this typedef and the definition for
-// INVALID_RETURN
+// The element type for this list
 typedef Token CListElementType;
 
 struct _cl_node
@@ -29,10 +27,10 @@ struct _clist
     int length;
 };
 
-// struct _clist is defined in .c file
+// struct _clist to be used in the .c as CList
 typedef struct _clist *CList;
 
-// Used to indicate an error on some functions
+// Indicates an error on some functions
 #define INVALID_RETURN ((CListElementType){TOK_END})
 
 /*

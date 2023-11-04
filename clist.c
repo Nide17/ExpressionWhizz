@@ -3,7 +3,7 @@
  *
  * Linked list implementation for ISSE Assignment 5
  *
- * Author: Niyomwungeri Parmenide ISHIMWE<parmenin@andrew.cmu.edu>
+ * Author: Niyomwungeri Parmenide Ishimwe<parmenin@andrew.cmu.edu>
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,11 +15,10 @@
 #define DEBUG
 
 /*
- * Create (malloc) a new _cl_node and populate it with the supplied
- * values
+ * Create (malloc) a new _cl_node and populate it with the supplied values
  *
  * Parameters:
- *   element, next  the values for the node to be created
+ *   element, next  The values for the node to be created
  *
  * Returns: The newly-malloc'd node, or NULL in case of error
  */
@@ -55,7 +54,10 @@ CList CL_new()
 void CL_free(CList list)
 {
   if (list == NULL)
+  {
+    printf("CL_free: list can not be freed since it is NULL\n");
     return;
+  }
 
   // deallocate all the nodes in the list
   struct _cl_node *this_node = list->head;
@@ -82,7 +84,7 @@ int CL_length(CList list)
   if (list == NULL)
     return 0;
 
-  assert(list);
+  // traverse the list, counting the number of nodes
 #ifdef DEBUG
   int len = 0;
   for (struct _cl_node *node = list->head; node != NULL; node = node->next)
@@ -97,7 +99,12 @@ int CL_length(CList list)
 // Documented in .h file
 void CL_push(CList list, CListElementType element)
 {
-  assert(list);
+  if (list == NULL || element.type == TOK_END)
+  {
+    printf("CL_push: can not be pushed\n");
+    return;
+  }
+
   list->head = _CL_new_node(element, list->head);
   list->length++;
 }
@@ -105,7 +112,12 @@ void CL_push(CList list, CListElementType element)
 // Documented in .h file
 CListElementType CL_pop(CList list)
 {
-  assert(list);
+  if (list == NULL)
+  {
+    printf("CL_pop: can not be popped on empty list\n");
+    return INVALID_RETURN;
+  }
+
   struct _cl_node *popped_node = list->head;
 
   if (popped_node == NULL)
@@ -116,7 +128,6 @@ CListElementType CL_pop(CList list)
   // unlink previous head node, then free it
   list->head = popped_node->next;
   free(popped_node);
-  // we cannot refer to popped node any longer
 
   list->length--;
 
@@ -126,8 +137,12 @@ CListElementType CL_pop(CList list)
 // Documented in .h file
 void CL_append(CList list, CListElementType element)
 {
-  assert(list);
 
+  if (list == NULL)
+  {
+    printf("CL_append: can not be appended\n");
+    return;
+  }
   // new node to append - its next pointer should be NULL
   struct _cl_node *new_node = _CL_new_node(element, NULL);
 
@@ -153,8 +168,11 @@ void CL_append(CList list, CListElementType element)
 // Documented in .h file
 CListElementType CL_nth(CList list, int pos)
 {
-  assert(list);
-
+  if (list == NULL)
+  {
+    printf("CL_nth: can not be found\n");
+    return INVALID_RETURN;
+  }
   // bounds check - if pos is negative or out of bounds, it's an error
   if (pos < -list->length || pos >= list->length)
     return INVALID_RETURN;
@@ -182,7 +200,11 @@ CListElementType CL_nth(CList list, int pos)
 // Documented in .h file
 bool CL_insert(CList list, CListElementType element, int pos)
 {
-  assert(list);
+  if (element.type == TOK_END)
+  {
+    printf("CL_insert: can not be inserted\n");
+    return false;
+  }
 
   // convert negative pos to positive by counting from the end of the list
   if (pos < 0)
@@ -224,7 +246,11 @@ bool CL_insert(CList list, CListElementType element, int pos)
 // Documented in .h file
 CListElementType CL_remove(CList list, int pos)
 {
-  assert(list);
+  if (list == NULL)
+  {
+    printf("CL_remove: can not be removed\n");
+    return INVALID_RETURN;
+  }
 
   // If pos is negative, count from the end of the list
   if (pos < 0)
@@ -276,7 +302,11 @@ CListElementType CL_remove(CList list, int pos)
 // Documented in .h file
 CList CL_copy(CList list)
 {
-  assert(list);
+  if (list == NULL)
+  {
+    printf("CL_copy: can not be copied\n");
+    return NULL;
+  }
 
   // create a new list
   CList list_copy = CL_new();
@@ -292,9 +322,6 @@ CList CL_copy(CList list)
 // Documented in .h file
 void CL_join(CList list1, CList list2)
 {
-  assert(list1);
-  assert(list2);
-
   // if list1 is empty, just point it at list2
   if (list1->head == NULL)
   {
@@ -324,7 +351,11 @@ void CL_join(CList list1, CList list2)
 // Documented in .h file
 void CL_reverse(CList list)
 {
-  assert(list);
+  if (list == NULL)
+  {
+    printf("CL_reverse: can not be reversed\n");
+    return;
+  }
 
   // reverse if list is not empty
   if (list->head != NULL)
@@ -351,8 +382,11 @@ void CL_reverse(CList list)
 // Documented in .h file
 void CL_foreach(CList list, CL_foreach_callback callback, void *cb_data)
 {
-  assert(list);
-
+  if (list == NULL)
+  {
+    printf("CL_foreach: can not be iterated\n");
+    return;
+  }
   // if list is empty, or callback is NULL, or cb_data is NULL, do nothing
   if (callback == NULL || list->head == NULL || cb_data == NULL)
     return;

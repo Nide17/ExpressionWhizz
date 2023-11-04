@@ -44,10 +44,6 @@ const char *TT_to_str(TokenType tt)
   __builtin_unreachable();
 }
 
-// implement the functions in tokenize.c. Most of the functions here are convenience
-// functions (though you will still need to implement them); the real work of tokenization is
-// performed in TOK_tokenize_input. Spend some time to get this working correctly
-// Documented in .h file
 bool isValidMathSign(char sign)
 {
   if (sign == '+' || sign == '-' || sign == '*' || sign == '/' || sign == '^')
@@ -71,58 +67,94 @@ bool isParenthesis(char parenthesis)
   return false;
 }
 
-bool validate_input(const char *input, char *errmsg, size_t errmsg_sz)
+bool isValidInput(const char *input, char *errmsg, size_t errmsg_sz)
 {
   // 3. Check if input is valid
-  errmsg[0] = '\0';
   int i = 0;
-  while (input[i++] != '\0')
+  while (input[i] != '\0')
   {
-    // OPTIONAL PERIOD
+    // OPTIONAL PERIOD - MUST BE FOLLOWED BY A DIGIT
     if (input[i] == '.')
     {
       if (!isdigit(input[i + 1]))
       {
+        printf("Error: unexpected digit %c\n", input[i]);
         snprintf(errmsg, errmsg_sz, "Position %d: unexpected character %c", i + 1, input[i]);
-        break;
+        return false;
       }
     }
 
     // EXPONENTS - e, E, p, P
     if (isExponent(input[i]))
     {
-      if (!isdigit(input[i + 1]) && input[i + 1] != '+' && input[i + 1] != '-')
+      if (!isdigit(input[i - 1]) || (!isdigit(input[i + 1]) && input[i + 1] != '+' && input[i + 1] != '-'))
       {
+        printf("Error: unexpected exponent %c\n", input[i]);
         snprintf(errmsg, errmsg_sz, "Position %d: unexpected character %c", i + 1, input[i]);
-        break;
+        return false;
+      }
+
+      // OPTIONAL SIGN - MUST BE FOLLOWED BY A DIGIT
+      if (input[i + 1] == '+' || input[i + 1] == '-')
+      {
+        if (!isdigit(input[i + 2]))
+        {
+          printf("Error: unexpected sign %c\n", input[i]);
+          snprintf(errmsg, errmsg_sz, "Position %d: unexpected character %c", i + 1, input[i]);
+          return false;
+        }
       }
     }
 
-    // ANY THING ELSE THAT IS NOT optional period, then a required decimal digit, then any sequence of letters,
+    // Any thing else that is not a required decimal digit, then any sequence of letters,
     // digits, underscores, periods, and exponents: e+, e-, E+, E-, p+, p-, P+, and P-
-    if (!isdigit(input[i]) && !isspace(input[i]) && input[i] != '.' && !isValidMathSign(input[i]) && !isParenthesis(input[i]) && !isExponent(input[i]))
+    if (!isdigit(input[i]) && input[i] != ' ' && input[i] != '.' && !isValidMathSign(input[i]) && !isParenthesis(input[i]) && !isExponent(input[i]) && input[i] != '_')
     {
-      snprintf(errmsg, errmsg_sz, "Position %d: unexpected character %c", i + 1, input[i]);
-      break;
+      // Look ahead to check if it's part of a valid sequence
+      int j = i + 1;
+      while (isdigit(input[j]) || input[j] == '_' || input[j] == '.' ||
+             (input[j] == 'e' && (input[j + 1] == '+' || input[j + 1] == '-') && isdigit(input[j + 2])) ||
+             (input[j] == 'E' && (input[j + 1] == '+' || input[j + 1] == '-') && isdigit(input[j + 2])) ||
+             (input[j] == 'p' && (input[j + 1] == '+' || input[j + 1] == '-') && isdigit(input[j + 2])) ||
+             (input[j] == 'P' && (input[j + 1] == '+' || input[j + 1] == '-') && isdigit(input[j + 2])))
+      {
+        j++;
+      }
+      // If we found a valid sequence, continue from the last valid character
+      if (j > i + 1)
+      {
+        i = j - 1;
+      }
+      else
+      {
+        printf("Error: unexpected character %c\n", input[i]);
+        snprintf(errmsg, errmsg_sz, "Position %d: unexpected character %c", i + 1, input[i]);
+        return false;
+      }
     }
+
+    i++;
   }
 
   return true;
 }
 
+// Documented in .h file
 CList TOK_tokenize_input(const char *input, char *errmsg, size_t errmsg_sz)
 {
   errmsg[0] = '\0';
+  printf("Input: %s\n", input);
   CList tokens = CL_new();
+  printf("Tokens: %p\n", tokens);
 
   // 1. Validate input
-  if (!validate_input(input, errmsg, errmsg_sz))
+  if (!isValidInput(input, errmsg, errmsg_sz))
   {
+    printf("Invalid input: %s\n", input);
     // Destroy the list of tokens
     CL_free(tokens);
     return NULL;
   }
-
   // 4. Tokenize input
   int i = 0;
   while (input[i] != '\0')
@@ -130,13 +162,22 @@ CList TOK_tokenize_input(const char *input, char *errmsg, size_t errmsg_sz)
     if (isspace(input[i]))
     {
       i++;
-      continue;
     }
     else if (isdigit(input[i]))
     {
       char *end;
-      double value = strtod(&input[i], &end);
+
+      // convert string to double, starting at address of input[i] 
+      // and store the address of the first character after the number in end
+      // if the number is 1.2e3, end will point to the 'e' & double value will be 1.2
+      double value = strtod(&input[i], &end); 
+
+      // append the token to the list of tokens
+      printf("Value: %f\n", value);
       CL_append(tokens, (CListElementType){TOK_VALUE, value});
+      printf("Tokens: %p\n", tokens);
+
+      // advance i to the first character after the number
       i = end - input;
     }
     else if (input[i] == '+')
@@ -177,8 +218,9 @@ CList TOK_tokenize_input(const char *input, char *errmsg, size_t errmsg_sz)
     else
     {
       // Destroy the list of tokens
-      CL_free(tokens);
+      printf("Error: unexpected last character %c\n", input[i]);
       snprintf(errmsg, errmsg_sz, "Position %d: unexpected character %c", i + 1, input[i]);
+      CL_free(tokens);
       return NULL;
     }
   }

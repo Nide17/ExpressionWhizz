@@ -4,7 +4,7 @@
  * Code that implements a recursive descent parser for arithmetic
  * expressions
  *
- * Author: Niyomwungeri Parmenide ISHIMWE<parmenin@andrew.cmu.edu>
+ * Author: Niyomwungeri Parmenide Ishimwe<parmenin@andrew.cmu.edu>
  */
 
 #include <stdio.h>
