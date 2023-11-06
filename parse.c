@@ -4,7 +4,7 @@
  * Code that implements a recursive descent parser for arithmetic
  * expressions
  *
- * Author: Niyomwungeri Parmenide Ishimwe<parmenin@andrew.cmu.edu>
+ * Author: Niyomwungeri Parmenide Ishimwe <parmenin@andrew.cmu.edu>
  */
 
 #include <stdio.h>
@@ -36,6 +36,7 @@ static ExprTree additive(CList tokens, char *errmsg, size_t errmsg_sz)
 {
   errmsg[0] = '\0';
   ExprTree ret = multiplicative(tokens, errmsg, errmsg_sz);
+
   if (ret == NULL)
     return NULL;
 
@@ -44,6 +45,7 @@ static ExprTree additive(CList tokens, char *errmsg, size_t errmsg_sz)
     TokenType op = TOK_next_type(tokens);
     TOK_consume(tokens);
     ExprTree right = multiplicative(tokens, errmsg, errmsg_sz);
+
     if (right == NULL)
       return NULL;
 
@@ -57,6 +59,7 @@ static ExprTree multiplicative(CList tokens, char *errmsg, size_t errmsg_sz)
 {
   errmsg[0] = '\0';
   ExprTree ret = exponential(tokens, errmsg, errmsg_sz);
+
   if (ret == NULL)
     return NULL;
 
@@ -65,6 +68,7 @@ static ExprTree multiplicative(CList tokens, char *errmsg, size_t errmsg_sz)
     TokenType op = TOK_next_type(tokens);
     TOK_consume(tokens);
     ExprTree right = exponential(tokens, errmsg, errmsg_sz);
+
     if (right == NULL)
       return NULL;
 
@@ -76,9 +80,9 @@ static ExprTree multiplicative(CList tokens, char *errmsg, size_t errmsg_sz)
 
 static ExprTree exponential(CList tokens, char *errmsg, size_t errmsg_sz)
 {
-
   errmsg[0] = '\0';
   ExprTree ret = primary(tokens, errmsg, errmsg_sz);
+
   if (ret == NULL)
     return NULL;
 
@@ -86,6 +90,7 @@ static ExprTree exponential(CList tokens, char *errmsg, size_t errmsg_sz)
   {
     TOK_consume(tokens);
     ExprTree right = exponential(tokens, errmsg, errmsg_sz);
+
     if (right == NULL)
       return NULL;
 
@@ -97,7 +102,6 @@ static ExprTree exponential(CList tokens, char *errmsg, size_t errmsg_sz)
 
 static ExprTree primary(CList tokens, char *errmsg, size_t errmsg_sz)
 {
-
   errmsg[0] = '\0';
   ExprTree ret = NULL;
 
@@ -109,24 +113,24 @@ static ExprTree primary(CList tokens, char *errmsg, size_t errmsg_sz)
   else if (TOK_next_type(tokens) == TOK_OPEN_PAREN)
   {
     TOK_consume(tokens);
-
     ret = additive(tokens, errmsg, errmsg_sz);
+
     if (ret == NULL)
       return NULL;
 
     if (TOK_next_type(tokens) != TOK_CLOSE_PAREN)
     {
       snprintf(errmsg, errmsg_sz, "Expected ')'");
+      ET_free(ret);
       return NULL;
     }
-    TOK_consume(tokens);
 
+    TOK_consume(tokens);
     return ret;
   }
   else if (TOK_next_type(tokens) == TOK_MINUS)
   {
     TOK_consume(tokens);
-
     ret = primary(tokens, errmsg, errmsg_sz);
 
     if (ret == NULL)
@@ -138,6 +142,8 @@ static ExprTree primary(CList tokens, char *errmsg, size_t errmsg_sz)
   else
   {
     snprintf(errmsg, errmsg_sz, "Unexpected token %s", TT_to_str(TOK_next_type(tokens)));
+    // free the tree we created
+    ET_free(ret);
     return NULL;
   }
 
@@ -147,6 +153,14 @@ static ExprTree primary(CList tokens, char *errmsg, size_t errmsg_sz)
 ExprTree Parse(CList tokens, char *errmsg, size_t errmsg_sz)
 {
   errmsg[0] = '\0';
+
+  // HANDLE ERRORS IN THE TOKENS LIST TO BE PARSED AS A MATH EXPRESSION
+  if (tokens == NULL || CL_length(tokens) == 0 || TOK_next_type(tokens) == TOK_END)
+  {
+    snprintf(errmsg, errmsg_sz, "No tokens to parse");
+    return NULL;
+  }
+
   ExprTree ret = additive(tokens, errmsg, errmsg_sz);
 
   if (ret == NULL)
@@ -155,6 +169,7 @@ ExprTree Parse(CList tokens, char *errmsg, size_t errmsg_sz)
   if (TOK_next_type(tokens) != TOK_END)
   {
     snprintf(errmsg, errmsg_sz, "Syntax error on token %s", TT_to_str(TOK_next_type(tokens)));
+    ET_free(ret);
     return NULL;
   }
 

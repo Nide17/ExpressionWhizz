@@ -58,6 +58,7 @@ static char ExprNodeType_to_char(ExprNodeType ent)
 // Documented in .h file
 ExprTree ET_value(double value)
 {
+  printf("ET_value: %f\n", value);
   ExprTree tree = malloc(sizeof(struct _expr_tree_node));
   assert(tree != NULL);
   

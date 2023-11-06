@@ -250,70 +250,58 @@ test_error:
  */
 int test_tokenize_input()
 {
-  // typedef struct
-  // {
-  //   const char *string;
-  //   const Token exp_tokens[100];
-  // } test_matrix_t;
-
-  // test_matrix_t tests[] =
-  //     {
-  //         // from writeup examples
-  //         {"3.5", {{TOK_VALUE, 3.5}, {TOK_END}}},
-  //         {"     3", {{TOK_VALUE, 3}, {TOK_END}}},
-  //         {"      10  ", {{TOK_VALUE, 10}, {TOK_END}}},
-  //         {"      -125.25  ", {{TOK_MINUS, 0}, {TOK_VALUE, 125.25}, {TOK_END}}},
-  //         {"3 + 5", {{TOK_VALUE, 3}, {TOK_PLUS, 0}, {TOK_VALUE, 5}, {TOK_END}}},
-  //         {"3 + 5 * 2", {{TOK_VALUE, 3}, {TOK_PLUS, 0}, {TOK_VALUE, 5}, {TOK_MULTIPLY, 0}, {TOK_VALUE, 2}, {TOK_END}}},
-
-  //         // additional test cases
-  //         {"(3 + 5) * 2", {{TOK_OPEN_PAREN, 0}, {TOK_VALUE, 3}, {TOK_PLUS, 0}, {TOK_VALUE, 5}, {TOK_CLOSE_PAREN, 0}, {TOK_MULTIPLY, 0}, {TOK_VALUE, 2}, {TOK_END}}},
-  //         {"3 + (5 * 2)", {{TOK_VALUE, 3}, {TOK_PLUS, 0}, {TOK_OPEN_PAREN, 0}, {TOK_VALUE, 5}, {TOK_MULTIPLY, 0}, {TOK_VALUE, 2}, {TOK_CLOSE_PAREN, 0}, {TOK_END}}},
-  //         {"3 + 5 * (2 - 1)", {{TOK_VALUE, 3}, {TOK_PLUS, 0}, {TOK_VALUE, 5}, {TOK_MULTIPLY, 0}, {TOK_OPEN_PAREN, 0}, {TOK_VALUE, 2}, {TOK_MINUS, 0}, {TOK_VALUE, 1}, {TOK_CLOSE_PAREN, 0}, {TOK_END}}},
-  //         {"3 + 5 * (2 - 1) / 4", {{TOK_VALUE, 3}, {TOK_PLUS, 0}, {TOK_VALUE, 5}, {TOK_MULTIPLY, 0}, {TOK_OPEN_PAREN, 0}, {TOK_VALUE, 2}, {TOK_MINUS, 0}, {TOK_VALUE, 1}, {TOK_CLOSE_PAREN, 0}, {TOK_DIVIDE, 0}, {TOK_VALUE, 4}, {TOK_END}}},
-  //         {"3 + 5 * (2 - 1) / 4 ^ 2", {{TOK_VALUE, 3}, {TOK_PLUS, 0}, {TOK_VALUE, 5}, {TOK_MULTIPLY, 0}, {TOK_OPEN_PAREN, 0}, {TOK_VALUE, 2}, {TOK_MINUS, 0}, {TOK_VALUE, 1}, {TOK_CLOSE_PAREN, 0}, {TOK_DIVIDE, 0}, {TOK_VALUE, 4}, {TOK_POWER, 0}, {TOK_VALUE, 2}, {TOK_END}}},
-  //         {"3 + 5 * (2 - 1) / 4 ^ 2 - 1", {{TOK_VALUE, 3}, {TOK_PLUS, 0}, {TOK_VALUE, 5}, {TOK_MULTIPLY, 0}, {TOK_OPEN_PAREN, 0}, {TOK_VALUE, 2}, {TOK_MINUS, 0}, {TOK_VALUE, 1}, {TOK_CLOSE_PAREN, 0}, {TOK_DIVIDE, 0}, {TOK_VALUE, 4}, {TOK_POWER, 0}, {TOK_VALUE, 2}, {TOK_MINUS, 0}, {TOK_VALUE, 1}, {TOK_END}}},
-  //         {"3 + 5 * (2 - 1) / 4 ^ 2 - 1 * 2", {{TOK_VALUE, 3}, {TOK_PLUS, 0}, {TOK_VALUE, 5}, {TOK_MULTIPLY, 0}, {TOK_OPEN_PAREN, 0}, {TOK_VALUE, 2}, {TOK_MINUS, 0}, {TOK_VALUE, 1}, {TOK_CLOSE_PAREN, 0}, {TOK_DIVIDE, 0}, {TOK_VALUE, 4}, {TOK_POWER, 0}, {TOK_VALUE, 2}, {TOK_MINUS, 0}, {TOK_VALUE, 1}, {TOK_MULTIPLY, 0}, {TOK_VALUE, 2}, {TOK_END}}},
-
-  //         // empty inputs
-  //         {"", {{TOK_END}}},
-  //         {" ", {{TOK_END}}},
-  //         {"     \t\n\r", {{TOK_END}}}};
-
-
-  // const int num_tests = sizeof(tests) / sizeof(test_matrix_t);
   char errmsg[128];
-
   CList list = NULL;
 
-  // for (int i = 0; i < num_tests; i++)
-  // {
-  //   list = TOK_tokenize_input(tests[i].string, errmsg, sizeof(errmsg));
+  list = TOK_tokenize_input("3", errmsg, sizeof(errmsg));
+  test_assert(CL_length(list) == 1);
+  test_assert(test_tok_eq(CL_nth(list, 0), (Token){TOK_VALUE, 3}));
+  CL_free(list);
 
-  //   for (int t = 0; tests[i].exp_tokens[t].type != TOK_END; t++)
-  //   {
-  //     test_assert(TOK_next_type(list) == tests[i].exp_tokens[t].type);
-  //     if (TOK_next_type(list) == TOK_VALUE)
-  //       test_assert(TOK_next(list).value == tests[i].exp_tokens[t].value);
-  //     TOK_consume(list);
-  //   }
+  list = TOK_tokenize_input("3 + 2", errmsg, sizeof(errmsg));
+  test_assert(CL_length(list) == 3);
+  test_assert(test_tok_eq(CL_nth(list, 0), (Token){TOK_VALUE, 3}));
+  test_assert(test_tok_eq(CL_nth(list, 1), (Token){TOK_PLUS}));
+  test_assert(test_tok_eq(CL_nth(list, 2), (Token){TOK_VALUE, 2}));
+  CL_free(list);
 
-  //   CL_free(list);
-  //   list = NULL;
-  // }
-
-  // Test erroneous inputs
   test_assert(TOK_tokenize_input("3pi", errmsg, sizeof(errmsg)) == NULL);
   test_assert(strcasecmp(errmsg, "Position 2: unexpected character p") == 0);
 
   test_assert(TOK_tokenize_input("make", errmsg, sizeof(errmsg)) == NULL);
   test_assert(strcasecmp(errmsg, "Position 1: unexpected character m") == 0);
 
-  test_assert(TOK_tokenize_input("3 + 2", errmsg, sizeof(errmsg)) != NULL);
-  printf("Error message: %s\n", errmsg);
-  // test_assert(strcasecmp(errmsg, "Position 4: unexpected character )") == 0);
-  
+  test_assert(TOK_tokenize_input("1258make111", errmsg, sizeof(errmsg)) == NULL);
+  test_assert(strcasecmp(errmsg, "Position 5: unexpected character m") == 0);
+
+  list = TOK_tokenize_input("(3 + 2)", errmsg, sizeof(errmsg));
+  test_assert(CL_length(list) == 5);
+  test_assert(test_tok_eq(CL_nth(list, 0), (Token){TOK_OPEN_PAREN}));
+  test_assert(test_tok_eq(CL_nth(list, 1), (Token){TOK_VALUE, 3}));
+  test_assert(test_tok_eq(CL_nth(list, 2), (Token){TOK_PLUS}));
+  test_assert(test_tok_eq(CL_nth(list, 3), (Token){TOK_VALUE, 2}));
+  test_assert(test_tok_eq(CL_nth(list, 4), (Token){TOK_CLOSE_PAREN}));
+  CL_free(list);
+
+  list = TOK_tokenize_input("3 + 2)", errmsg, sizeof(errmsg));
+  test_assert(CL_length(list) == 4);
+  test_assert(test_tok_eq(CL_nth(list, 0), (Token){TOK_VALUE, 3}));
+  test_assert(test_tok_eq(CL_nth(list, 1), (Token){TOK_PLUS}));
+  test_assert(test_tok_eq(CL_nth(list, 2), (Token){TOK_VALUE, 2}));
+  test_assert(test_tok_eq(CL_nth(list, 3), (Token){TOK_CLOSE_PAREN}));
+  CL_free(list);
+
+  list = TOK_tokenize_input("3 + (2*", errmsg, sizeof(errmsg));
+  test_assert(CL_length(list) == 5);
+  test_assert(test_tok_eq(CL_nth(list, 0), (Token){TOK_VALUE, 3}));
+  test_assert(test_tok_eq(CL_nth(list, 1), (Token){TOK_PLUS}));
+  test_assert(test_tok_eq(CL_nth(list, 2), (Token){TOK_OPEN_PAREN}));
+  test_assert(test_tok_eq(CL_nth(list, 3), (Token){TOK_VALUE, 2}));
+  test_assert(test_tok_eq(CL_nth(list, 4), (Token){TOK_MULTIPLY}));
+  CL_free(list);
+
   return 1;
+
 
 test_error:
   CL_free(list);
@@ -344,6 +332,11 @@ int test_parse_once(double exp_value, int exp_depth, const Token token_arr[])
     CL_append(tokens, token_arr[i]);
 
   tree = Parse(tokens, errmsg, sizeof(errmsg));
+  // printf("Error message: %s\n", errmsg);
+  // printf("Tree is %p\n", tree);
+  // printf("ET_depth(tree) is %d\n", ET_depth(tree));
+  // printf("exp_depth is %d\n", exp_depth);
+  // printf("ET_evaluate(tree) is %f\n", ET_evaluate(tree));
 
   test_assert(ET_depth(tree) == exp_depth);
   test_assert(fabs(ET_evaluate(tree) - exp_value) < 0.0001);
@@ -367,10 +360,10 @@ test_error:
 int test_parse()
 {
   test_assert(test_parse_once(3.5, 1, (Token[]){{TOK_VALUE, 3.5}, {TOK_END}}));
-  // test_assert(test_parse_once(3.5, 1, (Token[]){{TOK_VALUE, 3.5}, {TOK_PLUS}, {TOK_VALUE, 0}, {TOK_END}}));
-  // test_assert(test_parse_once(3.5, 1, (Token[]){{TOK_VALUE, 3.5}, {TOK_PLUS}, {TOK_VALUE, 0}, {TOK_PLUS}, {TOK_VALUE, 0}, {TOK_END}}));
-  // test_assert(test_parse_once(3.5, 1, (Token[]){{TOK_VALUE, 3.5}, {TOK_PLUS}, {TOK_VALUE, 0}, {TOK_PLUS}, {TOK_VALUE, 0}, {TOK_PLUS}, {TOK_VALUE, 0}, {TOK_END}}));
-  // test_assert(test_parse_once(3.5, 1, (Token[]){{TOK_VALUE, 3.5}, {TOK_PLUS}, {TOK_VALUE, 0}, {TOK_PLUS}, {TOK_VALUE, 0}, {TOK_PLUS}, {TOK_VALUE, 0}, {TOK_PLUS}, {TOK_VALUE, 0}, {TOK_END}}));
+  test_assert(test_parse_once(3.5, 2, (Token[]){{TOK_VALUE, 3.5}, {TOK_PLUS}, {TOK_VALUE, 0}, {TOK_END}}));
+  test_assert(test_parse_once(3.5, 3, (Token[]){{TOK_VALUE, 3.5}, {TOK_PLUS}, {TOK_VALUE, 0}, {TOK_PLUS}, {TOK_VALUE, 0}, {TOK_END}}));
+  test_assert(test_parse_once(3.5, 4, (Token[]){{TOK_VALUE, 3.5}, {TOK_PLUS}, {TOK_VALUE, 0}, {TOK_PLUS}, {TOK_VALUE, 0}, {TOK_PLUS}, {TOK_VALUE, 0}, {TOK_END}}));
+  test_assert(test_parse_once(3.5, 5, (Token[]){{TOK_VALUE, 3.5}, {TOK_PLUS}, {TOK_VALUE, 0}, {TOK_PLUS}, {TOK_VALUE, 0}, {TOK_PLUS}, {TOK_VALUE, 0}, {TOK_PLUS}, {TOK_VALUE, 0}, {TOK_END}}));
   return 1;
 
 test_error:
@@ -385,10 +378,10 @@ test_error:
  */
 int test_parse_associativity()
 {
-  test_assert(test_parse_once(5, 3,
-                              (Token[]){{TOK_VALUE, 10}, {TOK_MINUS}, {TOK_VALUE, 2}, {TOK_MINUS}, {TOK_VALUE, 3}, {TOK_END}}));
-
-  // test_assert(test_parse_once(5, 3, (Token[]){{TOK_VALUE, 10}, {TOK_MINUS}, {TOK_VALUE, 2}, {TOK_MINUS}, {TOK_VALUE, 3}, {TOK_MINUS}, {TOK_VALUE, 4}, {TOK_END}}));
+  test_assert(test_parse_once(5, 3, (Token[]){{TOK_VALUE, 10}, {TOK_MINUS}, {TOK_VALUE, 2}, {TOK_MINUS}, {TOK_VALUE, 3}, {TOK_END}}));
+  test_assert(test_parse_once(1, 4, (Token[]){{TOK_VALUE, 10}, {TOK_MINUS}, {TOK_VALUE, 2}, {TOK_MINUS}, {TOK_VALUE, 3}, {TOK_MINUS}, {TOK_VALUE, 4}, {TOK_END}}));
+  test_assert(test_parse_once(-4, 5, (Token[]){{TOK_VALUE, 10}, {TOK_MINUS}, {TOK_VALUE, 2}, {TOK_MINUS}, {TOK_VALUE, 3}, {TOK_MINUS}, {TOK_VALUE, 4}, {TOK_MINUS}, {TOK_VALUE, 5}, {TOK_END}}));
+  test_assert(test_parse_once(1, 3, (Token[]){{TOK_VALUE, 10}, {TOK_DIVIDE}, {TOK_VALUE, 2}, {TOK_DIVIDE}, {TOK_VALUE, 5}, {TOK_END}}));
 
   return 1;
 
@@ -403,6 +396,7 @@ test_error:
  */
 int test_parse_errors()
 {
+
   char errmsg[128];
   CList tokens = NULL;
   ExprTree tree = NULL;
@@ -411,13 +405,48 @@ int test_parse_errors()
   test_assert(CL_length(tokens) == 3);
   tree = Parse(tokens, errmsg, sizeof(errmsg));
   test_assert(tree != NULL);
-  ET_free(tree); // Free the expression tree
+  ET_free(tree);
   CL_free(tokens);
+
+  tokens = TOK_tokenize_input("2 + 3 * 2", errmsg, sizeof(errmsg));
+  test_assert(CL_length(tokens) == 5);
+  tree = Parse(tokens, errmsg, sizeof(errmsg));
+  test_assert(tree != NULL);
+  ET_free(tree);
+  printf("Error message: %s\n", errmsg);
+  CL_free(tokens);
+
+  tokens = TOK_tokenize_input("2 + 3 +", errmsg, sizeof(errmsg));
+  test_assert(CL_length(tokens) == 4);
+  tree = Parse(tokens, errmsg, sizeof(errmsg));
+  ET_free(tree);
+  // test_assert(tree == NULL);
+  printf("Error message: %s\n", errmsg);
+  // test_assert(strcasecmp(errmsg, "Unexpected token PLUS") == 0);
+  CL_free(tokens);
+
+  // tokens = TOK_tokenize_input("2++3)", errmsg, sizeof(errmsg));
+  // printf("Error message: %s\n", errmsg);
+  // test_assert(CL_length(tokens) == 5);
+  // test_assert(Parse(tokens, errmsg, sizeof(errmsg)) == NULL);
+  // test_assert(strcasecmp(errmsg, "Unexpected token PLUS") == 0);
+  // CL_free(tokens);
+
+  // ExprTree tree = NULL;
+  // tokens = TOK_tokenize_input("3 + 2", errmsg, sizeof(errmsg));
+  // test_assert(CL_length(tokens) == 3);
+  // tree = Parse(tokens, errmsg, sizeof(errmsg));
+  // test_assert(tree == NULL);
+  // ET_free(tree); // Free the expression tree
+  // CL_free(tokens);
 
   // tokens = TOK_tokenize_input("3 + 2)", errmsg, sizeof(errmsg));
   // test_assert(CL_length(tokens) == 4);
   // TOK_print(tokens);
   // tree = Parse(tokens, errmsg, sizeof(errmsg));
+  // test_assert(tree != NULL);
+  // ET_free(tree); // Free the expression tree
+  // CL_free(tokens);
 
   // if (tree != NULL)
   //   ET_free(tree); // Free the expression tree
@@ -438,7 +467,7 @@ int test_parse_errors()
   // test_assert(strcasecmp(errmsg, "Unexpected token (end)") == 0);
   // CL_free(tokens);
 
-  // tokens = TOK_tokenize_input("3 + ) 2", errmsg, sizeof(errmsg));
+  // tokens = TOK_tokenize_input("3 +) 2", errmsg, sizeof(errmsg));
   // printf("Error message: %s\n", errmsg);
   // test_assert(CL_length(tokens) == 4);
   // test_assert(Parse(tokens, errmsg, sizeof(errmsg)) == NULL);
@@ -461,8 +490,8 @@ int test_parse_errors()
   return 1;
 
 test_error:
-  CL_free(tokens);
   ET_free(tree);
+  CL_free(tokens);
   return 0;
 }
 

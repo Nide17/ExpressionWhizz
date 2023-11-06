@@ -67,10 +67,17 @@ bool isParenthesis(char parenthesis)
   return false;
 }
 
+bool CL_par_is_empty(CList list)
+{
+  return list == NULL || list->head == NULL;
+}
+
 bool isValidInput(const char *input, char *errmsg, size_t errmsg_sz)
 {
   // 3. Check if input is valid
   int i = 0;
+  CList parenStack = CL_new(); // Stack to track open parentheses positions
+
   while (input[i] != '\0')
   {
     // OPTIONAL PERIOD - MUST BE FOLLOWED BY A DIGIT
@@ -80,6 +87,7 @@ bool isValidInput(const char *input, char *errmsg, size_t errmsg_sz)
       {
         printf("Error: unexpected digit %c\n", input[i]);
         snprintf(errmsg, errmsg_sz, "Position %d: unexpected character %c", i + 1, input[i]);
+        CL_free(parenStack);
         return false;
       }
     }
@@ -91,6 +99,7 @@ bool isValidInput(const char *input, char *errmsg, size_t errmsg_sz)
       {
         printf("Error: unexpected exponent %c\n", input[i]);
         snprintf(errmsg, errmsg_sz, "Position %d: unexpected character %c", i + 1, input[i]);
+        CL_free(parenStack);
         return false;
       }
 
@@ -101,41 +110,51 @@ bool isValidInput(const char *input, char *errmsg, size_t errmsg_sz)
         {
           printf("Error: unexpected sign %c\n", input[i]);
           snprintf(errmsg, errmsg_sz, "Position %d: unexpected character %c", i + 1, input[i]);
+          CL_free(parenStack);
           return false;
         }
       }
     }
 
-    // Any thing else that is not a required decimal digit, then any sequence of letters,
-    // digits, underscores, periods, and exponents: e+, e-, E+, E-, p+, p-, P+, and P-
-    if (!isdigit(input[i]) && input[i] != ' ' && input[i] != '.' && !isValidMathSign(input[i]) && !isParenthesis(input[i]) && !isExponent(input[i]) && input[i] != '_')
+    // PARENTHESES
+    if (isParenthesis(input[i]))
     {
-      // Look ahead to check if it's part of a valid sequence
-      int j = i + 1;
-      while (isdigit(input[j]) || input[j] == '_' || input[j] == '.' ||
-             (input[j] == 'e' && (input[j + 1] == '+' || input[j + 1] == '-') && isdigit(input[j + 2])) ||
-             (input[j] == 'E' && (input[j + 1] == '+' || input[j + 1] == '-') && isdigit(input[j + 2])) ||
-             (input[j] == 'p' && (input[j + 1] == '+' || input[j + 1] == '-') && isdigit(input[j + 2])) ||
-             (input[j] == 'P' && (input[j + 1] == '+' || input[j + 1] == '-') && isdigit(input[j + 2])))
+      if (input[i] == '(')
       {
-        j++;
-      }
-      // If we found a valid sequence, continue from the last valid character
-      if (j > i + 1)
-      {
-        i = j - 1;
+        // Push the position of the open parenthesis to the stack
+        CL_append(parenStack, (CListElementType){TOK_OPEN_PAREN, 0.0});
       }
       else
       {
-        printf("Error: unexpected character %c\n", input[i]);
-        snprintf(errmsg, errmsg_sz, "Position %d: unexpected character %c", i + 1, input[i]);
-        return false;
+        // If the stack is empty, there is no open parenthesis to match
+        if (CL_par_is_empty(parenStack))
+        {
+          printf("Error: unexpected character %c\n", input[i]);
+          snprintf(errmsg, errmsg_sz, "Position %d: unexpected character %c", i + 1, input[i]);
+          CL_free(parenStack);
+          return false;
+        }
+        else
+        {
+          // Pop the position of the open parenthesis from the stack
+          CL_remove(parenStack, CL_length(parenStack) - 1);
+        }
       }
     }
 
     i++;
   }
 
+  // If the stack is not empty, there is an open parenthesis that is not matched
+  if (!CL_par_is_empty(parenStack))
+  {
+    printf("Error: unexpected end of input\n");
+    snprintf(errmsg, errmsg_sz, "Position %d: unexpected end of input", i + 1);
+    CL_free(parenStack);
+    return false;
+  }
+
+  CL_free(parenStack);
   return true;
 }
 
@@ -143,20 +162,10 @@ bool isValidInput(const char *input, char *errmsg, size_t errmsg_sz)
 CList TOK_tokenize_input(const char *input, char *errmsg, size_t errmsg_sz)
 {
   errmsg[0] = '\0';
-  printf("Input: %s\n", input);
-  CList tokens = CL_new();
-  printf("Tokens: %p\n", tokens);
-
-  // 1. Validate input
-  if (!isValidInput(input, errmsg, errmsg_sz))
-  {
-    printf("Invalid input: %s\n", input);
-    // Destroy the list of tokens
-    CL_free(tokens);
-    return NULL;
-  }
-  // 4. Tokenize input
   int i = 0;
+
+  CList tokens = CL_new();
+
   while (input[i] != '\0')
   {
     if (isspace(input[i]))
@@ -167,15 +176,13 @@ CList TOK_tokenize_input(const char *input, char *errmsg, size_t errmsg_sz)
     {
       char *end;
 
-      // convert string to double, starting at address of input[i] 
+      // convert string to double, starting at address of input[i]
       // and store the address of the first character after the number in end
       // if the number is 1.2e3, end will point to the 'e' & double value will be 1.2
-      double value = strtod(&input[i], &end); 
+      double value = strtod(&input[i], &end);
 
       // append the token to the list of tokens
-      printf("Value: %f\n", value);
       CL_append(tokens, (CListElementType){TOK_VALUE, value});
-      printf("Tokens: %p\n", tokens);
 
       // advance i to the first character after the number
       i = end - input;
@@ -217,8 +224,7 @@ CList TOK_tokenize_input(const char *input, char *errmsg, size_t errmsg_sz)
     }
     else
     {
-      // Destroy the list of tokens
-      printf("Error: unexpected last character %c\n", input[i]);
+      CL_append(tokens, (CListElementType){TOK_END, 0.0});
       snprintf(errmsg, errmsg_sz, "Position %d: unexpected character %c", i + 1, input[i]);
       CL_free(tokens);
       return NULL;

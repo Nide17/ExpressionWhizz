@@ -3,7 +3,7 @@
  *
  * Linked list implementation for ISSE Assignment 5
  *
- * Author: Niyomwungeri Parmenide Ishimwe<parmenin@andrew.cmu.edu>
+ * Author: Niyomwungeri Parmenide Ishimwe <parmenin@andrew.cmu.edu>
  *
  */
 #ifndef _CLIST_H_
