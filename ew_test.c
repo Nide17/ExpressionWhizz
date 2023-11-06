@@ -6,7 +6,6 @@
  * Author: Howdy Pierce <howdy@sleepymoose.net>
  * Contributor: Niyomwungeri Parmenide Ishimwe <parmenin@andrew.cmu.edu>
  */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -413,84 +412,71 @@ int test_parse_errors()
   tree = Parse(tokens, errmsg, sizeof(errmsg));
   test_assert(tree != NULL);
   ET_free(tree);
-  printf("Error message: %s\n", errmsg);
   CL_free(tokens);
 
-  tokens = TOK_tokenize_input("2 + 3 +", errmsg, sizeof(errmsg));
+  tokens = TOK_tokenize_input("3 + 2)", errmsg, sizeof(errmsg));
+  test_assert(CL_length(tokens) == 4);
+  test_assert(Parse(tokens, errmsg, sizeof(errmsg)) == NULL);
+  test_assert(strcasecmp(errmsg, "Syntax error on token CLOSE_PAREN") == 0);
+  CL_free(tokens);
+
+  tokens = TOK_tokenize_input("2++3", errmsg, sizeof(errmsg));
+  test_assert(CL_length(tokens) == 4);
+  test_assert(Parse(tokens, errmsg, sizeof(errmsg)) == NULL);
+  test_assert(strcasecmp(errmsg, "Unexpected token PLUS") == 0);
+  CL_free(tokens);
+
+  tokens = TOK_tokenize_input("3 + (2*", errmsg, sizeof(errmsg));
+  test_assert(CL_length(tokens) == 5);
+  test_assert(Parse(tokens, errmsg, sizeof(errmsg)) == NULL);
+  test_assert(strcasecmp(errmsg, "Unexpected token (end)") == 0);
+  CL_free(tokens);
+
+  tokens = TOK_tokenize_input("3 +) 2", errmsg, sizeof(errmsg));
+  test_assert(CL_length(tokens) == 4);
+  test_assert(Parse(tokens, errmsg, sizeof(errmsg)) == NULL);
+  test_assert(strcasecmp(errmsg, "Unexpected token CLOSE_PAREN") == 0);
+  CL_free(tokens);
+
+  tokens = TOK_tokenize_input("1 + 2 (", errmsg, sizeof(errmsg));
+  test_assert(CL_length(tokens) == 4);
+  test_assert(Parse(tokens, errmsg, sizeof(errmsg)) == NULL);
+  test_assert(strcasecmp(errmsg, "Syntax error on token OPEN_PAREN") == 0);
+  CL_free(tokens);
+
+  // (((33))) + 6
+  tokens = TOK_tokenize_input("(((33))) + 6", errmsg, sizeof(errmsg));
+  test_assert(CL_length(tokens) == 9);
+  tree = Parse(tokens, errmsg, sizeof(errmsg));
+  test_assert(tree != NULL);
+  ET_free(tree);
+  CL_free(tokens);
+
+  // 3e10 / 10^10
+  tokens = TOK_tokenize_input("3e10 / 10^10", errmsg, sizeof(errmsg));
+  test_assert(CL_length(tokens) == 5);
+  tree = Parse(tokens, errmsg, sizeof(errmsg));
+  test_assert(tree != NULL);
+  ET_free(tree);
+  CL_free(tokens);
+
+  // -1^2
+  tokens = TOK_tokenize_input("-1^2", errmsg, sizeof(errmsg));
   test_assert(CL_length(tokens) == 4);
   tree = Parse(tokens, errmsg, sizeof(errmsg));
+  test_assert(tree != NULL);
   ET_free(tree);
-  // test_assert(tree == NULL);
-  printf("Error message: %s\n", errmsg);
-  // test_assert(strcasecmp(errmsg, "Unexpected token PLUS") == 0);
   CL_free(tokens);
 
-  // tokens = TOK_tokenize_input("2++3)", errmsg, sizeof(errmsg));
-  // printf("Error message: %s\n", errmsg);
-  // test_assert(CL_length(tokens) == 5);
-  // test_assert(Parse(tokens, errmsg, sizeof(errmsg)) == NULL);
-  // test_assert(strcasecmp(errmsg, "Unexpected token PLUS") == 0);
-  // CL_free(tokens);
-
-  // ExprTree tree = NULL;
-  // tokens = TOK_tokenize_input("3 + 2", errmsg, sizeof(errmsg));
-  // test_assert(CL_length(tokens) == 3);
-  // tree = Parse(tokens, errmsg, sizeof(errmsg));
-  // test_assert(tree == NULL);
-  // ET_free(tree); // Free the expression tree
-  // CL_free(tokens);
-
-  // tokens = TOK_tokenize_input("3 + 2)", errmsg, sizeof(errmsg));
-  // test_assert(CL_length(tokens) == 4);
-  // TOK_print(tokens);
-  // tree = Parse(tokens, errmsg, sizeof(errmsg));
-  // test_assert(tree != NULL);
-  // ET_free(tree); // Free the expression tree
-  // CL_free(tokens);
-
-  // if (tree != NULL)
-  //   ET_free(tree); // Free the expression tree
-  // else
-  //   printf("Tree is %p\n", tree);
-  // CL_free(tokens);
-
-  // tokens = TOK_tokenize_input("2++3", errmsg, sizeof(errmsg));
-  // test_assert(CL_length(tokens) == 4);
-  // tree = Parse(tokens, errmsg, sizeof(errmsg));
-  // test_assert(tree == NULL);
-  // test_assert(strcasecmp(errmsg, "Unexpected token PLUS") == 0);
-  // CL_free(tokens);
-
-  // tokens = TOK_tokenize_input("3 + (2*", errmsg, sizeof(errmsg));
-  // test_assert(CL_length(tokens) == 5);
-  // test_assert(Parse(tokens, errmsg, sizeof(errmsg)) == NULL);
-  // test_assert(strcasecmp(errmsg, "Unexpected token (end)") == 0);
-  // CL_free(tokens);
-
-  // tokens = TOK_tokenize_input("3 +) 2", errmsg, sizeof(errmsg));
-  // printf("Error message: %s\n", errmsg);
-  // test_assert(CL_length(tokens) == 4);
-  // test_assert(Parse(tokens, errmsg, sizeof(errmsg)) == NULL);
-  // printf("Error message: %s\n", errmsg);
-  // test_assert(strcasecmp(errmsg, "Unexpected token CLOSE_PAREN") == 0);
-  // CL_free(tokens);
-
-  // tokens = TOK_tokenize_input("1 + 2 (", errmsg, sizeof(errmsg));
-  // test_assert(CL_length(tokens) == 4);
-  // test_assert(Parse(tokens, errmsg, sizeof(errmsg)) == NULL);
-  // CL_free(tokens);
-
-  // tokens = TOK_tokenize_input("sine", errmsg, sizeof(errmsg));
-  // test_assert(CL_length(tokens) == 0);
-  // test_assert(Parse(tokens, errmsg, sizeof(errmsg)) == NULL);
-  // printf("Error message: %s\n", errmsg);
-  // test_assert(strcasecmp(errmsg, "Unexpected token (end)") == 0);
-  // CL_free(tokens);
+  tokens = TOK_tokenize_input("sine", errmsg, sizeof(errmsg));
+  test_assert(CL_length(tokens) == 0);
+  test_assert(Parse(tokens, errmsg, sizeof(errmsg)) == NULL);
+  test_assert(strcasecmp(errmsg, "Position 1: unexpected character s") == 0);
+  CL_free(tokens);
 
   return 1;
 
 test_error:
-  ET_free(tree);
   CL_free(tokens);
   return 0;
 }

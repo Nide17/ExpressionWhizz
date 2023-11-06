@@ -1,54 +1,92 @@
-# ExpressionWhizz
-/var/local/scottycheck/isse-09/grader: line 192: 761679 Aborted                 (core dumped) ./a.out 1>&$outfile
+## ExpressionWhizz
 
+__INTRODUCTION__
 
-Leaked 0 memory blocks
+The "ExpressionWhizz" is a C program that implements a simple interactive expression evaluator that can handle a wide range of arithmetic expressions with arbitrary nesting of parentheses. It reads and evaluates user-provided expressions, returning the result. The program also supports features such as addition, subtraction, multiplication, division, and exponentiation. The program is implemented using a recursive descent parser, which is a top-down parser that constructs a parse tree from the top and the input is read from left to right.
 
-Correctness: 0 out of 56
-Memory leaks: 20 out of 20
-Traceback (most recent call last):
-  File "/var/local/scottycheck/isse-09/ew_interactive_test.py", line 108, in <module>
-    run_tests(sys.argv[1])
-  File "/var/local/scottycheck/isse-09/ew_interactive_test.py", line 100, in run_tests
-    run_one_test(child, test[0], re.escape(test[1]))
-  File "/var/local/scottycheck/isse-09/ew_interactive_test.py", line 71, in run_one_test
-    child.expect(prompt_re)
-  File "/usr/lib/python3/dist-packages/pexpect/spawnbase.py", line 343, in expect
-    return self.expect_list(compiled_pattern_list,
-  File "/usr/lib/python3/dist-packages/pexpect/spawnbase.py", line 372, in expect_list
-    return exp.expect_loop(timeout)
-  File "/usr/lib/python3/dist-packages/pexpect/expect.py", line 179, in expect_loop
-    return self.eof(e)
-  File "/usr/lib/python3/dist-packages/pexpect/expect.py", line 122, in eof
-    raise exc
-pexpect.exceptions.EOF: End Of File (EOF). Exception style platform.
-<pexpect.pty_spawn.spawn object at 0x7faa49803d00>
-command: ./interact
-args: [b'./interact']
-buffer (last 100 chars): ''
-before (last 100 chars): "\r\ninteract: clist.c:55: CL_free: Assertion `list' failed.\r\n"
-after: <class 'pexpect.exceptions.EOF'>
-match: None
-match_index: None
-exitstatus: None
-flag_eof: True
-pid: 761714
-child_fd: 5
-closed: False
-timeout: 1
-delimiter: <class 'pexpect.exceptions.EOF'>
-logfile: None
-logfile_read: <_io.TextIOWrapper name='ew_interactive_test.log' mode='w' encoding='UTF-8'>
-logfile_send: None
-maxread: 2000
-ignorecase: False
-searchwindowsize: None
-delaybeforesend: 0.05
-delayafterclose: 0.1
-delayafterterminate: 0.1
-searcher: searcher_re:
-    0: re.compile('[Ee]xpr\\? *')
+__DESCRIPTION__
 
+ExpressionWhizz consists of the following components:
 
+- **token.h**: Defines the Token data structure used to represent various tokens.
+- **tokenize.h** and **tokenize.c**: Tokenization functions for processing user input into tokens.
+- **parse.h** and **parse.c**: A parser for converting tokens into an abstract syntax tree (ExprTree) that represents the user's expression.
+- **clist.h**: A linked list implementation modified to work with Token data.
+- **expr_tree.h**: The ExprTree data structure and functions for building, evaluating, and converting expressions.
+- **expr_whizz.c**: The main program that gathers input, tokenizes it, parses it, and evaluates the expressions.
+- **ew_test.c**: Contains automated tests for ExpressionWhizz. You are encouraged to add more tests to ensure the correctness of your implementation.
 
-Input '3 + (2*': Expected 'Unexpected\ token\ \(end\)'
+__Expression Language__
+
+ExpressionWhizz supports standard infix-style arithmetic expressions with the following operators: +, -, *, /, and ^ (exponentiation). Unary negation is also supported. Here are the operator precedence rules:
+
+- Parentheses
+- Unary Negation
+- Power
+- Multiplication and Division
+- Addition and Subtraction
+  
+__USAGE__
+
+To use ExpressionWhizz, follow these steps:
+
+1. Compile the project using the provided Makefile. Run the following command in your terminal:
+```bash
+make
+```
+2. Run the ExpressionWhizz program:
+```bash
+./expr_whizz
+```
+3. Enter expressions and evaluate them interactively. Type an expression and press Enter to see the result.
+4. To exit ExpressionWhizz, press "CTRL+C".
+
+Some example inputs and outputs:
+
+```plaintext
+Welcome to ExpressionWhizz!
+
+Expr? 0.123
+0.123 ==> 0.123
+
+Expr? -0.123
+(-0.123) ==> -0.123
+
+Expr? 3+2
+(3 + 2) ==> 5
+
+Expr? 5 * -(10-4)
+(5 * (-(10 - 4))) ==> -30
+
+Expr? 2^(1.5*2) / (-1.7 + (6- 0.3))
+((2 ^ (1.5 * 2)) / ((-1.7) + (6 - 0.3))) ==> 2
+
+Expr? 1 + 2 (
+Syntax error on token OPEN_PAREN
+
+Expr? sine
+Position 1: unexpected character s
+
+Expr? 2 + + 3
+Unexpected token PLUS
+```
+
+__IMPORTANCE__
+
+It is a versatile tool for evaluating arithmetic expressions interactively. It offers comprehensive support for various operators and nested expressions.
+
+__KEYWORDS__
+
+<mark>ISSE</mark>     <mark>CMU</mark>     <mark>Assignment9</mark>     <mark>ExpressionWhizz</mark>     <mark>C Programming</mark>     <mark>Recursion</mark>    <mark>Tokenization</mark>    <mark>Parsing</mark>
+
+__AUTHOR__
+
+Howdy Pierce
+
+__CONTRIBUTOR__
+
+parmenin (Niyomwungeri Parmenide ISHIMWE) at CMU-Africa - MSIT
+
+__DATE__
+
+ November 06, 2023
