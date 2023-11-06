@@ -25,7 +25,6 @@
 static struct _cl_node *_CL_new_node(CListElementType element, struct _cl_node *next)
 {
   struct _cl_node *new = (struct _cl_node *)malloc(sizeof(struct _cl_node));
-
   assert(new);
 
   new->element = element;
@@ -81,6 +80,7 @@ int CL_length(CList list)
   // traverse the list, counting the number of nodes
 #ifdef DEBUG
   int len = 0;
+  
   for (struct _cl_node *node = list->head; node != NULL; node = node->next)
     len++;
 

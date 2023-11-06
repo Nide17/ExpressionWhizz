@@ -44,6 +44,7 @@ static ExprTree additive(CList tokens, char *errmsg, size_t errmsg_sz)
   {
     TokenType op = TOK_next_type(tokens);
     TOK_consume(tokens);
+
     ExprTree right = multiplicative(tokens, errmsg, errmsg_sz);
 
     if (right == NULL)
@@ -175,7 +176,15 @@ static ExprTree primary(CList tokens, char *errmsg, size_t errmsg_sz)
     if (ret == NULL)
       return NULL;
 
-    ret = ET_node(UNARY_NEGATE, ret, NULL);
+    ExprTree temp_tree = ET_node(UNARY_NEGATE, ret, NULL);
+
+    if (temp_tree == NULL)
+    {
+      ET_free(ret);
+      return NULL;
+    }
+
+    ret = temp_tree;
   }
 
   else
@@ -193,9 +202,7 @@ ExprTree Parse(CList tokens, char *errmsg, size_t errmsg_sz)
 {
   // HANDLE ERRORS IN THE TOKENS LIST TO BE PARSED AS A MATH EXPRESSION
   if (tokens == NULL || CL_length(tokens) == 0 || TOK_next_type(tokens) == TOK_END)
-  {
     return NULL;
-  }
 
   // START PARSING THE TOKENS LIST
   ExprTree ret = additive(tokens, errmsg, errmsg_sz);
@@ -210,6 +217,6 @@ ExprTree Parse(CList tokens, char *errmsg, size_t errmsg_sz)
     ET_free(ret);
     return NULL;
   }
-
+  
   return ret;
 }

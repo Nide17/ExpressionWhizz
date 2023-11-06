@@ -44,23 +44,35 @@ const char *TT_to_str(TokenType tt)
   __builtin_unreachable();
 }
 
+/*
+ * Helper function to check if a character is a valid math sign
+ *
+ * Parameters:
+ *   sign   The character to check
+ *
+ * Returns: true if the character is a valid math sign, false otherwise
+ */
+bool isValidMathSign(char sign)
+{
+  if (sign == '+' || sign == '-' || sign == '*' || sign == '/' || sign == '^')
+    return true;
+  return false;
+}
+
 // Documented in .h file
 CList TOK_tokenize_input(const char *input, char *errmsg, size_t errmsg_sz)
 {
   int i = 0;
-
   CList tokens = CL_new();
 
   while (input[i] != '\0')
   {
     if (isspace(input[i]))
-    {
       i++;
-    }
-    else if (isdigit(input[i]))
+      
+    else if (isdigit(input[i]) || (input[i] == '.' && isdigit(input[i + 1])))
     {
       char *end;
-
       // convert string to double, starting at address of input[i]
       // and store the address of the first character after the number in end
       // if the number is 1.2e3, end will point to the 'e' & double value will be 1.2
@@ -74,13 +86,33 @@ CList TOK_tokenize_input(const char *input, char *errmsg, size_t errmsg_sz)
     }
     else if (input[i] == '+')
     {
-      CL_append(tokens, (CListElementType){TOK_PLUS, 0.0});
-      i++;
+      if (input[i + 1] == '+' && CL_nth(tokens, CL_length(tokens) - 1).type == TOK_VALUE && isValidMathSign(input[i + 2]))
+      {
+        Token prev_token = CL_remove(tokens, CL_length(tokens) - 1);
+        Token new_token = {TOK_VALUE, prev_token.value + 1};
+        CL_append(tokens, new_token);
+        i += 2;
+      }
+      else
+      {
+        CL_append(tokens, (CListElementType){TOK_PLUS, 0.0});
+        i++;
+      }
     }
     else if (input[i] == '-')
     {
-      CL_append(tokens, (CListElementType){TOK_MINUS, 0.0});
-      i++;
+      if (input[i + 1] == '-' && CL_nth(tokens, CL_length(tokens) - 1).type == TOK_VALUE && isValidMathSign(input[i + 2]))
+      {
+        Token prev_token = CL_remove(tokens, CL_length(tokens) - 1);
+        Token new_token = {TOK_VALUE, prev_token.value - 1};
+        CL_append(tokens, new_token);
+        i += 2;
+      }
+      else
+      {
+        CL_append(tokens, (CListElementType){TOK_MINUS, 0.0});
+        i++;
+      }
     }
     else if (input[i] == '*')
     {

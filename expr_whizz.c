@@ -36,6 +36,7 @@ int main(int argc, char *argv[])
     errmsg[0] = '\0';
 
     input = readline("\nExpr? ");
+
     if (input == NULL || strcasecmp(input, "quit") == 0)
     {
       time_to_quit = true;
